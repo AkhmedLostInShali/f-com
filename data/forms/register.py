@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, IntegerField, SubmitField, EmailField, FileField
+from wtforms import PasswordField, StringField, IntegerField, SubmitField, EmailField
 from wtforms.validators import DataRequired
+from flask_wtf.file import FileField, FileAllowed
 
 
 class RegisterForm(FlaskForm):
@@ -18,6 +19,6 @@ class ExtensionForm(FlaskForm):
     age = IntegerField('Age', validators=[DataRequired()])
     portrayal = StringField('Portrayal', validators=[DataRequired()])
     speciality = StringField('Speciality', validators=[DataRequired()])
-    avatar = FileField('Avatar', validators=[DataRequired()])
+    avatar = FileField('Avatar', validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
     city_from = StringField('City from', validators=[DataRequired()])
     submit = SubmitField('Submit')

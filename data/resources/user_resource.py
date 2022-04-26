@@ -11,8 +11,8 @@ parser = my_parsers.UserParser()
 
 def abort_if_user_not_found(users_id):
     session = db_session.create_session()
-    news = session.query(User).get(users_id)
-    if not news:
+    user = session.query(User).get(users_id)
+    if not user:
         abort(404, message=f"User {users_id} not found")
 
 
@@ -54,7 +54,7 @@ class UsersResource(Resource):
         user.speciality = request.json['speciality'] if request.json.get('speciality') else user.speciality
         user.avatar = request.json['avatar'] if request.json.get('avatar') else user.avatar
         user.city_from = request.json['city_from'] if request.json.get('city_from') else user.city_from
-        user.rank = request.json['rank'] if request.json.get('rank') else user.address
+        user.rank = request.json['rank'] if request.json.get('rank') else user.rank
         if request.json.get('password') and request.json.get('password_again'):
             if request.json['password'] != request.json['password_again']:
                 return jsonify({'error': "Passwords doesn't match"})
@@ -69,8 +69,8 @@ class UsersListResource(Resource):
     def get(self):
         db_sess = db_session.create_session()
         users = db_sess.query(User).all()
-        return jsonify({'users': [user.to_dict(only=('nickname', 'surname', 'name', 'rank', 'avatar'))
-                                 for user in users]})
+        return jsonify({'users': [user.to_dict(only=('id', 'nickname', 'surname', 'name', 'rank', 'avatar'))
+                                  for user in users]})
 
     def post(self):
         args = parser.parse_args()

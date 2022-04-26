@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row row-cols-1 row-cols-md-3 g-{{ n + 1 }}">
+      {% for publication in publications %}
+          <div class="col">
+            <div class="card" style="margin-top: .5rem; margin-right: .5rem; margin-left: .5rem; background-color: #EFEEED;
+            border-radius: 10px">
+              <div class="card-header">
+                {% set user = users|selectattr('id', "equalto", publication.author)|first() %}
+                <div class="row row-cols-3">
+                  <div class="col-3">
+                    <img src="{{ user['avatar'] }}"
+                         class="img-fluid rounded-circle" alt="...">
+                  </div>
+                  <div class="col-5">
+                    <h5>{{ user['nickname'] }}</h5>
+                  </div>
+                  <div class="col-4">
+                    {% if current_user.id == publication.author %}
+                      <div class="dropdown dropend" align="right">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="publicationsMenu"
+                                data-bs-toggle="dropdown" aria-expanded="false">≡</button>
+                        <ul class="dropdown-menu p-2" aria-labelledby="publicationsMenu">
+                          <li><a class="btn btn-info" style="width: 142px" type="button">Redact</a></li>
+                          <li><a class="btn btn-danger" style="width: 142px" type="button"
+                                 href="/delete_publication/{{ publication.id }}">Delete</a></li>
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <img src="{{ publication.photo }}" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">{{ publication.title }}</h5>
+              </div>
+              <div class="card-footer">
+                <small class="text-muted">{{ publication.publication_date }}</small>
+              </div>
+            </div>
+          </div>
+      {% endfor %}
+    </div>
+{% endblock %}

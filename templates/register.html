@@ -5,7 +5,7 @@
         <div>
             {{ form.csrf_token }}
         </div>
-        <h2 style="padding-left: 15rem"><b>Register form</b></h2>
+        <h2 style="padding-left: auto"><b>Register form</b></h2>
         {% for field in form if field.name != 'csrf_token' %}
           {% if loop.last %}
             <p style="padding-left: 15rem">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
