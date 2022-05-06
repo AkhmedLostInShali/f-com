@@ -7,24 +7,11 @@ from .db_session import SqlAlchemyBase
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-# association_table = sqlalchemy.Table(
-#     'user_to_user',
-#     SqlAlchemyBase.metadata,
-#     sqlalchemy.Column('subscriber_id', sqlalchemy.Integer,
-#                       sqlalchemy.ForeignKey('users.id')),
-#     sqlalchemy.Column('creator_id', sqlalchemy.Integer,
-#                       sqlalchemy.ForeignKey('users.id')),
-#     orm.relationship("User", foreign_keys='User.subscriber_id'),
-#     orm.relationship("User", foreign_keys='User.creator_id'))
-
-
-class UserToUser(SqlAlchemyBase):
-    __tablename__ = 'user_to_user'
-    subscriber_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'), primary_key=True)
-    creator_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'), primary_key=True)
-    status = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    subscriber = orm.relationship("User", back_populates="subscribers", foreign_keys=[subscriber_id])
-    creator = orm.relationship("User", back_populates="subscriptions", foreign_keys=[creator_id])
+subscribes = sqlalchemy.Table('subscribes', SqlAlchemyBase.metadata,
+                              sqlalchemy.Column('subscriber_id', sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'),
+                                                index=True),
+                              sqlalchemy.Column('subscribed_id', sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'),
+                                                index=True))
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
@@ -44,10 +31,27 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=False)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 
-    subscriptions = orm.relation("UserToUser",
-                                 back_populates="subscriber", foreign_keys='UserToUser.creator_id')
-    subscribers = orm.relation("UserToUser",
-                               back_populates="creator", foreign_keys='UserToUser.subscriber_id')
+    subscribed = orm.relation('User', secondary=subscribes,
+                              primaryjoin=(subscribes.c.subscriber_id == id),
+                              secondaryjoin=(subscribes.c.subscribed_id == id),
+                              backref='subscribes',
+                              lazy='dynamic')
+
+    def to_subscribe(self, user):
+        if not self.is_friended(user):
+            self.subscribed.append(user)
+            return self
+
+    def to_unsubscribe(self, user):
+        if self.is_friended(user):
+            self.subscribed.remove(user)
+            return self
+
+    def is_subscriber(self, user):
+        return self.subscribed.filter_by(nickname=user.nickname).count() > 0
+
+    def is_subscribed(self, user):
+        return self.subscribed.filter(subscribes.c.subscribed_id == user.id).count() > 0
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

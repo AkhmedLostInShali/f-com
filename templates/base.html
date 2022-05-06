@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link type="image/x-icon" rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
     <link rel="stylesheet"
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
@@ -20,11 +21,20 @@
       {% if current_user.is_authenticated %}
           {% if not current_user.portrayal or not current_user.surname or not current_user.age
            or current_user.avatar == "/static/img/avatars/default.png" %}
-             <a href="/extension" class="btn btn-warning">!</a>
+             <a href="/extension" class="btn btn-warning" data-bs-toggle="tooltip"
+                data-bs-placement="bottom" title="Add profile info!">!</a>
           {% endif %}
-          <a href="/logout" class="btn btn-light">exit</a>
-          <a href="/post_publication" class="btn btn-info">add publication</a>
+          <a href="/logout" class="btn btn-light" data-bs-toggle="tooltip"
+             data-bs-placement="bottom" title="logout">&#9111</a>
+          <a href="/post_publication" class="btn btn-info" data-bs-toggle="tooltip"
+             data-bs-placement="bottom" title="Add publication">&#10133</a>
+          {% if current_user.rank in ['moderation', 'administration'] %}
+             <a href="/reported_publications" class="btn btn-warning"
+                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Moderate posts">&#128295</a>
+          {% endif %}
       {% endif %}
+      <a href="/users" class="btn btn-outline-primary" data-bs-toggle="tooltip"
+         data-bs-placement="bottom" title="Users">&#128101</a>
     </div>
   </div>
   <nav class="navbar navbar-dark bg-dark">
@@ -36,11 +46,11 @@
         {% if current_user.is_authenticated %}
           <ul class="navbar-nav justify-content-end me-auto mb-2 mb-lg-0" style="flex-direction: row;">
             <li class="nav-item">
-              <img src="{{ current_user.avatar }}" class="img-fluid rounded-circle" alt="not found"
-               style="width: 50px">
+              <a href="/user/{{current_user.id}}">
+                  <img src="{{ current_user.avatar }}"class="img-fluid rounded-circle" alt="not found" style="width: 50px"></a>
             </li>
             <li class="nav-item" style="margin-top: auto; margin-bottom: auto;">
-              <h5>{{ current_user.nickname }}</h5>
+              <h5 style="color: #fff">{{ current_user.nickname }}</h5>
             </li>
           </ul>
         {% else %}
@@ -52,7 +62,7 @@
       </div>
   </nav>
 </header>
-<main role="main" class="container" style="margin-left: 0px">
+<main role="main" class="container">
     {% block content %}{% endblock %}
 </main>
 </body>

@@ -17,5 +17,3 @@ class Message(SqlAlchemyBase, UserMixin, SerializerMixin):
     sender = orm.relationship("User", foreign_keys='Message.sender_id')
     receiver_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     receiver = orm.relationship("User", foreign_keys='Message.receiver_id')
-    # user = orm.relation('User')
-    # stakeholder = relationship("Company", foreign_keys='stakeholder_id')

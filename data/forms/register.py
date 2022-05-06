@@ -15,10 +15,10 @@ class RegisterForm(FlaskForm):
 
 class ExtensionForm(FlaskForm):
     surname = StringField('Surname', validators=[DataRequired()])
-    name = StringField('Name', validators=[DataRequired()])
+    name = StringField('Name')
     age = IntegerField('Age', validators=[DataRequired()])
-    portrayal = StringField('Portrayal', validators=[DataRequired()])
-    speciality = StringField('Speciality', validators=[DataRequired()])
+    portrayal = StringField('Portrayal')
+    speciality = StringField('Speciality')
     avatar = FileField('Avatar', validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
     city_from = StringField('City from', validators=[DataRequired()])
     submit = SubmitField('Submit')

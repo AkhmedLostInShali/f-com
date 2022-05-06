@@ -21,7 +21,11 @@ class UsersResource(Resource):
         abort_if_user_not_found(users_id)
         db_sess = db_session.create_session()
         user = db_sess.query(User).get(users_id)
-        return jsonify({'user': user.to_dict()})
+        user_dict = user.to_dict(only=('id', 'nickname', 'surname', 'name', 'age', 'rank', 'avatar', 'portrayal',
+                                       'city_from', 'speciality', 'email', 'hashed_password'))
+        user_dict['subscribed'] = [u.id for u in user.subscribed]
+        user_dict['subscribes'] = [u.id for u in user.subscribes]
+        return jsonify({'user': user_dict})
 
     def delete(self, users_id):
         abort_if_user_not_found(users_id)
@@ -69,7 +73,8 @@ class UsersListResource(Resource):
     def get(self):
         db_sess = db_session.create_session()
         users = db_sess.query(User).all()
-        return jsonify({'users': [user.to_dict(only=('id', 'nickname', 'surname', 'name', 'rank', 'avatar'))
+        return jsonify({'users': [user.to_dict(only=('id', 'nickname', 'surname', 'name', 'rank', 'avatar',
+                                                     'speciality'))
                                   for user in users]})
 
     def post(self):
@@ -98,5 +103,50 @@ class UsersListResource(Resource):
         user.set_password(args['password'])
 
         db_sess.add(user)
+        db_sess.commit()
+        return jsonify({'success': 'OK'})
+
+
+class UsersSearchResource(Resource):
+    def get(self, to_find):
+        db_sess = db_session.create_session()
+        search_like = f"%{'%'.join(to_find.split())}%"
+        users = db_sess.query(User).filter(User.nickname.like(search_like) | User.name.like(search_like) |
+                                           User.surname.like(search_like)).all()
+        return jsonify({'users': [user.to_dict(only=('id', 'nickname', 'surname', 'name', 'rank', 'avatar'))
+                                  for user in users]})
+
+
+class UsersSubscriptionsResource(Resource):
+    def get(self, from_for, users_id):
+        abort_if_user_not_found(users_id)
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).get(users_id)
+        if from_for == 'for':
+            subscriptions = [sub.id for sub in user.subscribed]
+        else:
+            subscriptions = [sub.id for sub in user.subscribes]
+        logging.info(subscriptions)
+        users = db_sess.query(User).filter(User.id.in_(subscriptions)).all()
+        return jsonify({'users': [user.to_dict(only=('id', 'nickname', 'surname', 'name', 'rank', 'avatar'))
+                                  for user in users]})
+
+
+class UsersSubscribeResource(Resource):
+    def put(self, users_id, subscribers_id):
+        abort_if_user_not_found(users_id)
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).get(users_id)
+        subscriber = db_sess.query(User).get(subscribers_id)
+        user.subscribed.append(subscriber)
+        db_sess.commit()
+        return jsonify({'success': 'OK'})
+
+    def delete(self, users_id, subscribers_id):
+        abort_if_user_not_found(users_id)
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).get(users_id)
+        subscriber = db_sess.query(User).get(subscribers_id)
+        user.subscribed.remove(subscriber)
         db_sess.commit()
         return jsonify({'success': 'OK'})

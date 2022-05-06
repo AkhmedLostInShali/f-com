@@ -5,12 +5,12 @@
         <div>
             {{ form.csrf_token }}
         </div>
-        <h2 style="padding-left: 15%"><b>Posting publication</b></h2>
+        <h2 style="padding-left: auto"><b>Posting publication</b></h2>
         {% for field in form if field.name != 'csrf_token' %}
           {% if loop.last %}
-            <p style="padding-left: 15rem">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+            <p style="padding-left: auto">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
           {% else %}
-            <div style="padding-left: 15rem">
+            <div style="padding-left: auto">
                 {{ field.label }}<br>
                 {{ field(class="form-control", style="height: 42px") }}<br>
                 {% for error in field.errors %}

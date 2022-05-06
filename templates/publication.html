@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="card-group" style="margin-top: 1rem">
+    <div class="card" style="background-color: #EFEEED; border-radius: 5px">
+      <div class="card-header">
+        <div class="container-fluid" style="display: flex;justify-content: space-between;">
+          <h2 class="card-title">{{ publication.title }}</h2>
+          <div class="btn-group" role="group" style="height: 32px">
+            <a class="btn btn-light btn-sm" type="button" href="/publications" data-bs-toggle="tooltip"
+               data-bs-placement="bottom" title="Go back">&#x2190</a>
+            {% if current_user.id == publication.author or current_user.rank in ('administration', 'moderation') %}
+              <a class="btn btn-info btn-sm" type="button" data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" title="Redact"
+                 href="/redact_publication/{{ publication.id }}">&#9998</a>
+              <a class="btn btn-danger btn-sm" type="button"
+                 href="/delete_publication/{{ publication.id }}">&#128465</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <img src="{{ publication.photo }}" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h4 class="card-text">{{ publication.description }}</h4>
+      </div>
+      <div class="card-footer" >
+        <small class="text-muted">{{ publication.publication_date }}</small>
+          {% if current_user.is_authenticated %}
+            {% if current_user.id != publication.author %}
+               <a class="btn {{ 'btn-warning disabled' if publication.reported else 'btn-outline-warning' }}"
+                  style="width: 38px; border-radius: 19px; padding-left: 0px; padding-right: 0px" type="button" data-bs-toggle="tooltip"
+                  data-bs-placement="bottom" title="Report" href="/report_publication/{{ publication.id }}">&#128226</a>
+            {% endif %}
+            <a class="btn {{ 'btn-primary' if current_user.id in publication.cheers else 'btn-outline-primary' }}"
+                  style="width: 38px; border-radius: 19px; padding-left: 0px; padding-right: 0px"
+               href="/cheer/{{ publication.id }}">{{ '🖤' if current_user.id in publication.cheers else '💙' }}</a>
+            <small class="text-muted">Cheers: {{ publication.cheers|length() }}</small>
+          {% endif %}
+      </div>
+    </div>
+    <div class="card" style="background-color: #EFEEED; border-radius: 5px">
+      <div class="card-header">
+        <div class="row">
+          <div class="col-10 align-self-start">
+            <h5>{{ publication.user.nickname }}</h5>
+          </div>
+          <div class="col align-self-end align-right">
+            <a href="/user/{{ publication.user.id }}">
+               <img src="{{ publication.user.avatar }}" class="img-fluid rounded-circle" alt="..."></a>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="overflow-y: scroll; height:550px;">
+          {% for comment in comments %}
+            <div class="card mb-3" style="width: 350px;">
+              <div class="card-body">
+                <div class="row g-0">
+                  <div class="col-md-3">
+                    <a href="/user/{{ comment.user.id }}">
+                    <img src="{{ comment.user.avatar }}" class="img-fluid rounded-circle" alt="..."></a>
+                  </div>
+                  <div class="col-md-8">
+                    <h6 class="card-title">-{{ comment.user.nickname }}</h6>
+                    {{ comment.text }}
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer" style="height">
+                <small class="text-muted">{{ comment.send_time }}</small>
+                {% if current_user.id == comment.user.id %}
+                  <a href="/delete_comment/{{ comment.id }}" class="btn btn-danger btn-sm align-end">&#128465</a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <form class="row" method="post">
+          {{ form.hidden_tag() }}
+          {{ form.text(class="form-control", style="width: 85%", placeholder="Write comment...") }}
+          {{ form.submit(type="submit", style="width: 9%", class="btn btn-primary") }}
+          {% for error in form.text.errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ error }}
+            </div>
+          {% endfor %}
+          <div>{{ message }}</div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted"> Total: {{ comments|length() }} comment</small>
+      </div>
+    </div>
+  </div>
+{% endblock %}

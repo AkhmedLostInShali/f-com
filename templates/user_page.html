@@ -1,5 +1,105 @@
 {% extends "base.html" %}
 
 {% block content %}
-
+  <div class="row" style="margin-top: 1rem; margin-right: 0px; margin-left: 0px;
+  background-color: #b5c3e1; border-radius: 15px">
+    <div class="col-lg p-0">
+      <div class="row">
+        <div class="col-auto">
+          <div class="card h-100" style="max-width: 225px; background-color: #343a40; border-radius: 15px">
+            <img src="{{ user.avatar }}" class="card-img-top" style="border-radius: 15px;
+             max-width: 223px" alt="...">
+            <div class="card-footer">
+              <small class="text-muted"><b>{{ user.nickname }} ‧ </b>{{ user.rank if user.rank else '' }} ‧
+              {{ user.speciality if user.speciality else '' }}</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-auto">
+          <h4>{{ user.surname if user.surname else '' }} {{ user.name }}</h4>
+          {% if user.portrayal %}
+            <p>{{ user.portrayal }}</p>
+          {% endif %}
+          {% if user.city_from %}
+            <h6>From: {{ user.city_from }}</h6>
+          {% endif %}
+          {% if user.age %}
+            <h6>{{ user.age }} y.o.</h6>
+          {% endif %}
+          <a href="/subscribes/for/{{ user.id }}"><h4>{{ user.subscribed|length() }} subscriber</h4></a>
+          <a href="/subscribes/from/{{ user.id }}"><h4>{{ user.subscribes|length() }} subscriptions</h4></a>
+          {% if current_user.is_authenticated %}
+            {% if current_user.id != user.id %}
+              {% if current_user.id in user.subscribed %}
+                <a class="btn btn-outline-dark" href="/subscribe_to/{{user.id}}">Unsubscribe</a>
+              {% else %}
+                <a class="btn btn-dark" href="/subscribe_to/{{user.id}}">Subscribe</a>
+              {% endif %}
+            {% else %}
+              <a class="btn btn-outline-primary" href="/extension" data-bs-toggle="tooltip"
+                 data-bs-placement="bottom" title="Redact profile">&#9998</a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="row row-cols-2 g-{{ n }}" style="overflow-y: scroll; max-height: 455px; border-radius: 15px;
+        padding-right: 15px">
+        {% for publication in publications %}
+          <div class="col" style="padding-right: 0px; padding-top: 5px">
+            <a href="/publication/{{ publication.id }}">
+              <img src="{{ publication.photo }}" class="img-thumbnail" style="background-color: #343a40;
+               width: 100%" alt="..."></a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg p-0" style="background-color: #343a40">
+      <div style="overflow-y: scroll; height: 700px; border-radius: 15px">
+        {% for message in messages %}
+          {% if current_user.id == message.sender_id %}
+            <div style="flex: 1; display: flex; flex-direction: row; margin-top: 5px">
+              <div style="flex-grow: 1"></div>
+              <div class="card text-end mb-3" style="background-color: #a1c5f7; width: fit-content; max-width: 350px">
+                <div class="card-body p-1">
+                  <div class="card-text">{{ message.text }}</div>
+                </div>
+                <div class="card-footer p-1">
+                  <small class="text-muted">{{ message.send_time }}</small>
+                  <a href="/delete_message/{{ message.id }}" class="btn btn-danger btn-sm align-end"
+                  style="border-radius: 15px">&#128465</a>
+                </div>
+              </div>
+              <div style="width: 5px"></div>
+            </div>
+          {% else %}
+            <div style="flex: 1; display: flex; flex-direction: row-reverse; margin-top: 5px">
+              <div style="flex-grow: 1"></div>
+              <div class="card mb-3" style="background-color: #DDD; width: fit-content; max-width: 350px">
+                <div class="card-body p-1">
+                  <div class="card-text">{{ message.text }}</div>
+                </div>
+                <div class="card-footer p-1">
+                  <small class="text-muted">{{ message.send_time }}</small>
+                </div>
+              </div>
+              <div style="width: 5px"></div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <form style="justify-content: space-between" method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-3 row" style="padding-left: 5%">
+          {{ form.text(class="form-control", style="width: 85%", placeholder="Write message...") }}
+          {{ form.submit(type="submit", style="width: 9%", class="btn btn-primary") }}
+        </div>
+        {% for error in form.text.errors %}
+          <div class="alert alert-danger" role="alert">
+            {{ error }}
+          </div>
+        {% endfor %}
+        <div>{{ message }}</div>
+      </form>
+    </div>
+  </div>
 {% endblock %}
